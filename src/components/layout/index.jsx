@@ -17,15 +17,15 @@ function StatCard({ label, value, color }) {
 
 export function Sidebar() {
   const { role, logout, isAuthenticated } = useAuth();
-  const { stats, statusFilter, setStatusFilter, cases } = useApp();
+  const { stats, statusFilter, setStatusFilter, allCases } = useApp();
 
   if (!isAuthenticated) return null;
 
-  function countFor(val) {
-    if (val === "ALL") return cases.length;
-    if (val === "ACTIVE_ONLY") return (stats.active ?? 0) + (stats.inProgress ?? 0);
-    return cases.filter(c => c.status === val).length;
-  }
+function countFor(val) {
+  if (val === "ALL") return allCases.length;
+  if (val === "ACTIVE_ONLY") return (stats.active ?? 0) + (stats.inProgress ?? 0);
+  return allCases.filter(c => c.status === val).length;
+}
 
   return (
     <aside style={{

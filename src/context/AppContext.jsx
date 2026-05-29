@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { casesApi }     from "../api/cases.js";
 import { employeesApi } from "../api/index.js";
 import { useAuth }      from "./AuthContext.jsx";
@@ -11,6 +11,7 @@ export function AppProvider({ children }) {
   const { isAuthenticated, isAdmin } = useAuth();
 
   const [cases,        setCases]        = useState([]);
+  const [allCases,     setAllCases]     = useState([]);
   const [casesLoading, setCasesLoading] = useState(false);
   const [casesError,   setCasesError]   = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -40,6 +41,14 @@ export function AppProvider({ children }) {
     }
   }, [isAuthenticated, statusFilter]);
 
+  const loadAllCases = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const data = await casesApi.getAll();
+      setAllCases(data);
+    } catch (_) {}
+  }, [isAuthenticated]);
+
   const loadEmployees = useCallback(async () => {
     if (!isAuthenticated || !isAdmin) return;
     try {
@@ -48,7 +57,8 @@ export function AppProvider({ children }) {
     } catch (_) {}
   }, [isAuthenticated, isAdmin]);
 
-  useEffect(() => { loadCases(); },    [loadCases, tick]);
+  useEffect(() => { loadCases(); },     [loadCases, tick]);
+  useEffect(() => { loadAllCases(); },  [loadAllCases, tick]);
   useEffect(() => { loadEmployees(); }, [loadEmployees]);
 
   useEffect(() => {
@@ -69,16 +79,16 @@ export function AppProvider({ children }) {
   });
 
   const stats = {
-    total:      cases.length,
-    active:     cases.filter(c => c.status === "ACTIVE").length,
-    inProgress: cases.filter(c => c.status === "IN_PROGRESS").length,
-    resolved:   cases.filter(c => c.status === "RESOLVED").length,
-    closed:     cases.filter(c => c.status === "CLOSED").length,
+    total:      allCases.length,
+    active:     allCases.filter(c => c.status === "ACTIVE").length,
+    inProgress: allCases.filter(c => c.status === "IN_PROGRESS").length,
+    resolved:   allCases.filter(c => c.status === "RESOLVED").length,
+    closed:     allCases.filter(c => c.status === "CLOSED").length,
   };
 
   return (
     <AppContext.Provider value={{
-      cases, filteredCases, casesLoading, casesError,
+      cases, allCases, filteredCases, casesLoading, casesError,
       statusFilter, setStatusFilter,
       selectedId, setSelectedId,
       employees,
