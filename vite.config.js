@@ -7,10 +7,16 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": {
-        target:      "http://localhost:8080",
+        target:       "http://localhost:8080",
         changeOrigin: true,
-        secure:      false,
+        secure:       false,
       },
     },
+  },
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: "./src/test/setup.js",
+    pool: "vmThreads",
   },
 });
